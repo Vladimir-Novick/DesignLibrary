@@ -11,12 +11,12 @@
 
 #include <afxbutton.h>
 
-class CMouseAction : public BASECLASS
+class CDesignMouseAction : public BASECLASS
 {
 // Construction
 public:
-	CMouseAction();
-	DECLARE_SERIAL(CMouseAction)
+	CDesignMouseAction();
+	DECLARE_SERIAL(CDesignMouseAction)
 // Attributes
 public:
 
@@ -33,7 +33,7 @@ public:
 
 // Implementation
 public:
-	virtual ~CMouseAction();
+	virtual ~CDesignMouseAction();
 	BOOL IsTransparent() { return m_bTranparent; }
 	void SetTransparent(BOOL bTransparent=TRUE) { m_bTranparent = bTransparent;	}
 	BOOL IsHovering() { return m_bHover; }

@@ -12,8 +12,8 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMouseAction
-IMPLEMENT_SERIAL(CMouseAction,BASECLASS,1)
-CMouseAction::CMouseAction()
+IMPLEMENT_SERIAL(CDesignMouseAction,BASECLASS,1)
+CDesignMouseAction::CDesignMouseAction()
 {
 	m_bResizing = FALSE;
 	m_bTranparent = FALSE;
@@ -27,12 +27,12 @@ CMouseAction::CMouseAction()
 }
 
 
-CMouseAction::~CMouseAction()
+CDesignMouseAction::~CDesignMouseAction()
 {
 	DeleteToolTip();
 }
 
-BEGIN_MESSAGE_MAP(CMouseAction, BASECLASS)
+BEGIN_MESSAGE_MAP(CDesignMouseAction, BASECLASS)
 	//{{AFX_MSG_MAP(CMouseAction)
 	ON_WM_MOUSEMOVE()
 	ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
@@ -46,7 +46,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CMouseAction message handlers
 
-void CMouseAction::OnMouseMove(UINT nFlags, CPoint point) 
+void CDesignMouseAction::OnMouseMove(UINT nFlags, CPoint point) 
 {
 	if (!m_bTracking)
 	{
@@ -60,7 +60,7 @@ void CMouseAction::OnMouseMove(UINT nFlags, CPoint point)
 	}
 	BASECLASS::OnMouseMove(nFlags,point);
 }
-LRESULT CMouseAction::OnMouseHover(WPARAM wparam, LPARAM lparam) 
+LRESULT CDesignMouseAction::OnMouseHover(WPARAM wparam, LPARAM lparam) 
 {
 	if (!m_bHover)
 	{
@@ -84,7 +84,7 @@ LRESULT CMouseAction::OnMouseHover(WPARAM wparam, LPARAM lparam)
 	return 0;
 }
 
-LRESULT CMouseAction::OnMouseLeave(WPARAM wparam, LPARAM lparam)
+LRESULT CDesignMouseAction::OnMouseLeave(WPARAM wparam, LPARAM lparam)
 {
 	m_bTracking = FALSE;
 	m_bHover=FALSE;
@@ -92,7 +92,7 @@ LRESULT CMouseAction::OnMouseLeave(WPARAM wparam, LPARAM lparam)
 	return 0;
 }
 
-void CMouseAction::OnRButtonDown( UINT nFlags, CPoint point )
+void CDesignMouseAction::OnRButtonDown( UINT nFlags, CPoint point )
 {
 	if ((IsMoveable() == TRUE) && (m_bResizing == FALSE)) // Are we allowed to resize the window?
 	{
@@ -131,7 +131,7 @@ void CMouseAction::OnRButtonDown( UINT nFlags, CPoint point )
 	BASECLASS::OnRButtonDown(nFlags,point);
 }
 
-BOOL CMouseAction::PreTranslateMessage(MSG* pMsg) 
+BOOL CDesignMouseAction::PreTranslateMessage(MSG* pMsg) 
 {
 	if (m_ToolTip != NULL)
 		if (::IsWindow(m_ToolTip->m_hWnd)) // Incase m_ToolTip isn't NULL, check to see if its a valid window
@@ -140,7 +140,7 @@ BOOL CMouseAction::PreTranslateMessage(MSG* pMsg)
 }
 
 // Set the tooltip with a string resource
-void CMouseAction::SetToolTipText(UINT nId, BOOL bActivate)
+void CDesignMouseAction::SetToolTipText(UINT nId, BOOL bActivate)
 {
 	// load string resource
 	m_tooltext.LoadString(nId);
@@ -151,7 +151,7 @@ void CMouseAction::SetToolTipText(UINT nId, BOOL bActivate)
 }
 
 // Set the tooltip with a CString
-void CMouseAction::SetToolTipText(CString spText, BOOL bActivate)
+void CDesignMouseAction::SetToolTipText(CString spText, BOOL bActivate)
 {
 	// We cannot accept NULL pointer
 	if (spText.IsEmpty()) return;
@@ -173,7 +173,7 @@ void CMouseAction::SetToolTipText(CString spText, BOOL bActivate)
 	m_ToolTip->Activate(bActivate);
 }
 
-void CMouseAction::InitToolTip()
+void CDesignMouseAction::InitToolTip()
 {
 	if (m_ToolTip == NULL)
 	{
@@ -185,7 +185,7 @@ void CMouseAction::InitToolTip()
 } // End of InitToolTip
 
 // Activate the tooltip
-void CMouseAction::ActivateTooltip(BOOL bActivate)
+void CDesignMouseAction::ActivateTooltip(BOOL bActivate)
 {
 	// If there is no tooltip then do nothing
 	if (m_ToolTip->GetToolCount() == 0)
@@ -195,7 +195,7 @@ void CMouseAction::ActivateTooltip(BOOL bActivate)
 	m_ToolTip->Activate(bActivate);
 } // End of EnableTooltip
 
-void CMouseAction::DeleteToolTip()
+void CDesignMouseAction::DeleteToolTip()
 {
 	// Destroy Tooltip incase the size of the button has changed.
 	if (m_ToolTip != NULL)
@@ -205,7 +205,7 @@ void CMouseAction::DeleteToolTip()
 	}
 }
 
-void CMouseAction::OnMove(int x, int y) 
+void CDesignMouseAction::OnMove(int x, int y) 
 {
 	BASECLASS::OnMove(x, y);
 	
@@ -225,7 +225,7 @@ void CMouseAction::OnMove(int x, int y)
 	ShowWindow(SW_SHOW);//Now redraw us so that Control displays correctly
 }
 
-void CMouseAction::Serialize(CArchive& ar) 
+void CDesignMouseAction::Serialize(CArchive& ar) 
 {
 	if (ar.IsStoring())//Save Window Position in relation to parent
 	{	// storing code
@@ -273,7 +273,7 @@ void CMouseAction::Serialize(CArchive& ar)
 	}
 }
 
-HBRUSH CMouseAction::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
+HBRUSH CDesignMouseAction::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
 	HBRUSH hbr = NULL;
 	

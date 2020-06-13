@@ -3,14 +3,14 @@
 
 // CDesignButtonAction.h : header file
 //
-#define BASECLASS CMFCButton
+
 
 #include "CDesignMouseAction.h"
 #include "afxbutton.h"
 /////////////////////////////////////////////////////////////////////////////
 // CDesignButtonAction window
 
-class CDesignButtonAction : public CMouseAction
+class CDesignButtonAction : public CDesignMouseAction
 {
 // Construction
 public:
@@ -43,6 +43,8 @@ protected:
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 
 /////////////////////////////////////////////////////////////////////////////

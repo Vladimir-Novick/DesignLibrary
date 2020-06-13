@@ -24,12 +24,13 @@ CDesignButtonAction::~CDesignButtonAction()
 }
 
 
-BEGIN_MESSAGE_MAP(CDesignButtonAction, CMouseAction)
+BEGIN_MESSAGE_MAP(CDesignButtonAction, CDesignMouseAction)
 	//{{AFX_MSG_MAP(CDesignButtonAction)
 	ON_WM_MOUSEMOVE()
 	ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 	ON_MESSAGE(WM_MOUSEHOVER, OnMouseHover)
 	//}}AFX_MSG_MAP
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,30 +40,39 @@ void CDesignButtonAction::InitButton(COLORREF mouseLeave, COLORREF mouseHover) {
 	m_MouseHover = mouseHover;
 	m_MouseLeave = mouseLeave;
 	m_enable = TRUE;
-	CMouseAction::SetFaceColor(m_MouseLeave, true);
-	CMouseAction::m_nFlatStyle = CMFCButton::BUTTONSTYLE_NOBORDERS;
+	CDesignMouseAction::SetFaceColor(m_MouseLeave, true);
+	CDesignMouseAction::m_nFlatStyle = CMFCButton::BUTTONSTYLE_NOBORDERS;
 }
 
 
 LRESULT CDesignButtonAction::OnMouseLeave(WPARAM wparam, LPARAM lparam)
 {
 	if (m_enable) {
-		CMouseAction::SetFaceColor(m_MouseLeave, true);
+		CDesignMouseAction::SetFaceColor(m_MouseLeave, true);
 	}
-	CMouseAction::OnMouseLeave(wparam, lparam);
+	CDesignMouseAction::OnMouseLeave(wparam, lparam);
 	return 0;
 }
 
 LRESULT CDesignButtonAction::OnMouseHover(WPARAM wparam, LPARAM lparam)
 {
 	if (m_enable) {
-		CMouseAction::SetFaceColor(m_MouseHover, true);
+		CDesignMouseAction::SetFaceColor(m_MouseHover, true);
 	}
-	CMouseAction::OnMouseHover(wparam, lparam);
+	CDesignMouseAction::OnMouseHover(wparam, lparam);
 	return 0;
 }
 
 void CDesignButtonAction::OnMouseMove(UINT nFlags, CPoint point) 
 {
-	CMouseAction::OnMouseMove(nFlags, point);
+	CDesignMouseAction::OnMouseMove(nFlags, point);
+}
+
+
+void CDesignButtonAction::OnSize(UINT nType, int cx, int cy)
+{
+	CDesignMouseAction::OnSize(nType, cx, cy);
+	if (m_enable) {
+		CDesignMouseAction::SetFaceColor(m_MouseLeave, true);
+	}
 }
