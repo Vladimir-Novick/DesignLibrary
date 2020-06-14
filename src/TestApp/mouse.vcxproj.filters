@@ -24,12 +24,6 @@
     <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CDesignButtonAction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CDesignMouseAction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="mouse.rc">
@@ -47,12 +41,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StdAfx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CDesignButtonAction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CDesignMouseAction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

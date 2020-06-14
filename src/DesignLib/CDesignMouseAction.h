@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "StdAfx.h"
+
 // CDesignMouseAction.h : header file
 //
 
@@ -59,9 +61,9 @@ protected:
 	CString m_tooltext;
 	CToolTipCtrl* m_ToolTip;
 	void InitToolTip();
-	TCHAR *LongToStr(TCHAR *ch,long value)
+	TCHAR *LongToStr(TCHAR *ch,int len,long value)
 	{
-		_stprintf(ch,_T("%i"),value);
+		_stprintf_s(ch,len,_T("%i"),value);
 		return ch;
 	}
 	//{{AFX_MSG(CMouseAction)

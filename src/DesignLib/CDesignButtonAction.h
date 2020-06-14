@@ -3,7 +3,7 @@
 
 // CDesignButtonAction.h : header file
 //
-
+#include "StdAfx.h"
 
 #include "CDesignMouseAction.h"
 #include "afxbutton.h"

@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "mouse.h"
 #include "mouseDlg.h"
+#include "../DesignLib/CDesignUtils.h"
 #include <list>
 
 #ifdef _DEBUG
@@ -27,16 +28,25 @@ CMouseDlg::CMouseDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
+
+CMouseDlg::~CMouseDlg() {
+	for (auto it = buttons.begin(); it != buttons.end(); ++it) {
+		CDesignButtonAction* control = reinterpret_cast<CDesignButtonAction*>(it->second);
+		delete control;
+	}
+	buttons.clear();
+}
+
 void CMouseDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-	DDX_ButtonsControl(pDX);
+	DDX_ButtonsControl(buttons,pDX);
 
 	//}}AFX_DATA_MAP
 }
-
-void CMouseDlg::DDX_ButtonsControl(CDataExchange* pDX)
+void CMouseDlg::DDX_ButtonsControl(map<int, void*>& buttons,
+	CDataExchange* pDX)
 {
 	CWnd* cWnd = CWnd::FromHandle(m_hWnd);
 	auto pChild = cWnd->GetWindow(GW_CHILD);
@@ -50,7 +60,7 @@ void CMouseDlg::DDX_ButtonsControl(CDataExchange* pDX)
 			CDesignButtonAction* control;
 			auto it = buttons.find(controlID);
 			if (it != buttons.end()) {
-				control = buttons[controlID];
+				control = reinterpret_cast<CDesignButtonAction*>(buttons[controlID]);
 			}
 			else {
 				control = new CDesignButtonAction();
@@ -64,9 +74,10 @@ void CMouseDlg::DDX_ButtonsControl(CDataExchange* pDX)
 	}
 
 	for (auto it = buttons.begin(); it != buttons.end(); ++it) {
-		it->second->InitButton(RGB(255, 0, 0), RGB(0, 255, 0));
+		reinterpret_cast<CDesignButtonAction*>(it->second)->InitButton(RGB(255, 0, 0), RGB(0, 255, 0));
 	}
 }
+
 
 BEGIN_MESSAGE_MAP(CMouseDlg, CDialog)
 	//{{AFX_MSG_MAP(CMouseDlg)
@@ -127,7 +138,7 @@ void CMouseDlg::OnPaint()
 
 		// Load the bitmap resource
 		bmpSource.LoadBitmap(IDB_BITMAP1);
-		HBITMAP newbmp = ScaleBitmapInt(bmpSource, rect.Width(), rect.Height());
+		HBITMAP newbmp = CDesignUtils::ScaleBitmapInt(bmpSource, rect.Width(), rect.Height());
 		CBitmap *bmp = CBitmap::FromHandle(newbmp);
 
 		// Create a compatible memory DC
@@ -153,33 +164,3 @@ HCURSOR CMouseDlg::OnQueryDragIcon()
 }
 
 
-HBITMAP CMouseDlg::ScaleBitmapInt(HBITMAP hBitmap, WORD wNewWidth, WORD wNewHeight)
-{
-	// Create a memory DC compatible with the display
-	CDC sourceDC, destDC;
-	sourceDC.CreateCompatibleDC(NULL);
-	destDC.CreateCompatibleDC(NULL);
-
-	// Get logical coordinates
-	BITMAP bm;
-	::GetObject(hBitmap, sizeof(bm), &bm);
-
-	// Create a bitmap to hold the result
-	HBITMAP hbmResult = ::CreateCompatibleBitmap(CClientDC(NULL),
-		wNewWidth, wNewHeight);
-
-	// Select bitmaps into the DCs
-	HBITMAP hbmOldSource = (HBITMAP)::SelectObject(sourceDC.m_hDC, hBitmap);
-	HBITMAP hbmOldDest = (HBITMAP)::SelectObject(destDC.m_hDC, hbmResult);
-
-
-
-	destDC.StretchBlt(0, 0, wNewWidth, wNewHeight, &sourceDC,
-		0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
-
-	// Reselect the old bitmaps
-	::SelectObject(sourceDC.m_hDC, hbmOldSource);
-	::SelectObject(destDC.m_hDC, hbmOldDest);
-
-	return hbmResult;
-}

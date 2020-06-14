@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <Keyword>MFCProj</Keyword>
     <ProjectGuid>{0A1D4A66-5A36-4F18-88B5-D646320052CF}</ProjectGuid>
+    <ProjectName>TestApplication</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -87,7 +88,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>.\Debug\mouse.exe</OutputFile>
+      <OutputFile>.\Debug\TestApplication.exe</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -125,14 +126,12 @@
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>.\Release\mouse.exe</OutputFile>
+      <OutputFile>.\Release\TestApplication.exe</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="mouse.cpp" />
-    <ClCompile Include="CDesignMouseAction.cpp" />
     <ClCompile Include="mouseDlg.cpp" />
-    <ClCompile Include="CDesignButtonAction.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
@@ -145,10 +144,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mouse.h" />
-    <ClInclude Include="CDesignMouseAction.h" />
     <ClInclude Include="mouseDlg.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="CDesignButtonAction.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +157,11 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DesignLib\DesignLib.vcxproj">
+      <Project>{df29e72a-9dbe-4fcf-924e-0fc218026f50}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

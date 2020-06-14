@@ -241,13 +241,13 @@ void CDesignMouseAction::Serialize(CArchive& ar)
 		}
 		if (!rect.IsRectEmpty())
 		{
-			str += LongToStr(ch,rect.left);
+			str += LongToStr(ch, _MAX_PATH,rect.left);
 			str += _T(",");
-			str += LongToStr(ch,rect.top);
+			str += LongToStr(ch, _MAX_PATH,rect.top);
 			str += _T(",");
-			str += LongToStr(ch,rect.right);
+			str += LongToStr(ch, _MAX_PATH,rect.right);
 			str += _T(",");
-			str += LongToStr(ch,rect.bottom);
+			str += LongToStr(ch, _MAX_PATH,rect.bottom);
 			str += _T("\r\n");
 		}
 		ar.WriteString(str);
@@ -262,13 +262,13 @@ void CDesignMouseAction::Serialize(CArchive& ar)
 			SetWindowName(str.Left(str.Find(_T("="),0)));
 			str.Delete(0,str.Find(_T("="),0)+1);
 		}
-		rect.left = atol(str.Left(str.Find(_T(","),0)));
+		rect.left = _wtol(str.Left(str.Find(_T(","),0)));
 		str.Delete(0,str.Find(_T(","),0)+1);
-		rect.top = atol(str.Left(str.Find(_T(","),0)));
+		rect.top = _wtol(str.Left(str.Find(_T(","),0)));
 		str.Delete(0,str.Find(_T(","),0)+1);
-		rect.right = atol(str.Left(str.Find(_T(","),0)));
+		rect.right = _wtol(str.Left(str.Find(_T(","),0)));
 		str.Delete(0,str.Find(_T(","),0)+1);
-		rect.bottom = atol(str);
+		rect.bottom = _wtol(str);
 		BOOL b = ::MoveWindow(BASECLASS::m_hWnd,rect.left,rect.top,rect.Width(),rect.Height(),TRUE);
 	}
 }

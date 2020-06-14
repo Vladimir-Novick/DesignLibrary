@@ -1,8 +1,7 @@
 // CDesignButtonAction.cpp : implementation file
 //
+#include "StdAfx.h"
 
-#include "stdafx.h"
-#include "mouse.h"
 #include "CDesignButtonAction.h"
 
 #ifdef _DEBUG
