@@ -41,12 +41,11 @@ void CMouseDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-	DDX_ButtonsControl(buttons,pDX);
+	DDX_ButtonsControl(pDX);
 
 	//}}AFX_DATA_MAP
 }
-void CMouseDlg::DDX_ButtonsControl(map<int, void*>& buttons,
-	CDataExchange* pDX)
+void CMouseDlg::DDX_ButtonsControl(CDataExchange* pDX)
 {
 	CWnd* cWnd = CWnd::FromHandle(m_hWnd);
 	auto pChild = cWnd->GetWindow(GW_CHILD);
@@ -55,19 +54,37 @@ void CMouseDlg::DDX_ButtonsControl(map<int, void*>& buttons,
 		::GetClassName(pChild->m_hWnd, clsName_v, 256);
 
 		if (_tcscmp(clsName_v, _T("Button")) == 0) {
-			int controlID = ::GetDlgCtrlID(pChild->m_hWnd);
+			CButton* testButton = (CButton*)CButton::FromHandle(pChild->m_hWnd);
+			if (testButton != NULL) {
+				int controlID = testButton->GetDlgCtrlID();
+				if (controlID != -1) {
+					CString strCaption;
+					WINDOWINFO pwi;
+					testButton->GetWindowInfo(&pwi);
+					auto types = pwi.dwStyle & BS_TYPEMASK;
+					if ((types != BS_GROUPBOX)
+						&& (types != BS_CHECKBOX)
+						&& (types != BS_AUTOCHECKBOX)
+						&& (types != BS_RADIOBUTTON)
+						&& (types != BS_AUTORADIOBUTTON)
+						&& (types != BS_OWNERDRAW)
+						)
+					{
+						CDesignButtonAction* control;
+						auto it = buttons.find(controlID);
+						if (it != buttons.end()) {
+							control = buttons[controlID];
+						}
+						else {
+							control = new CDesignButtonAction();
+							buttons[controlID] = control;
+						}
 
-			CDesignButtonAction* control;
-			auto it = buttons.find(controlID);
-			if (it != buttons.end()) {
-				control = reinterpret_cast<CDesignButtonAction*>(buttons[controlID]);
-			}
-			else {
-				control = new CDesignButtonAction();
-				buttons[controlID] = control;
-			}
+						DDX_Control(pDX, controlID, *control);
+					}
 
-			DDX_Control(pDX, controlID, *control);
+				}
+			}
 
 		}
 		pChild = pChild->GetNextWindow();

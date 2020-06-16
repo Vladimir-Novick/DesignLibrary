@@ -15,8 +15,7 @@ class CMouseDlg : public CDialog
 // Construction
 public:
 	CMouseDlg(CWnd* pParent = NULL);	// standard constructor
-	void DDX_ButtonsControl(map<int, void*>& buttons,
-		CDataExchange* pDX);
+	void DDX_ButtonsControl(CDataExchange* pDX);
 	~CMouseDlg();
 // Dialog Data
 	//{{AFX_DATA(CMouseDlg)
@@ -26,7 +25,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMouseDlg)
 	protected:
-	map<int ,void*> buttons;
+	map<int , CDesignButtonAction*> buttons;
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 		//}}AFX_VIRTUAL
 
