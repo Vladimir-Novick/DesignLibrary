@@ -35,3 +35,5 @@ HBITMAP CDesignUtils::ScaleBitmapInt(HBITMAP hBitmap, WORD wNewWidth, WORD wNewH
 
 
 
+
+

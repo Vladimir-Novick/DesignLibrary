@@ -4,40 +4,38 @@
 // CDesignButtonAction.h : header file
 //
 #include "StdAfx.h"
-
-#include "CDesignMouseAction.h"
 #include "afxbutton.h"
+#include "DesignColors.h"
+#include "CDesignMouseAction.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CDesignButtonAction window
 
-class CDesignButtonAction : public CDesignMouseAction
+class CDesignButton : public CDesignMouseAction
 {
-// Construction
+	// Construction
 public:
-	CDesignButtonAction();
+	CDesignButton();
 
-// Attributes
-public:
-
-// Operations
+	// Attributes
 public:
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CDesignButtonAction)
-	//}}AFX_VIRTUAL
-
-// Implementation
+	// Operations
 public:
-	virtual ~CDesignButtonAction();
-	void InitButton(COLORREF mouseHover, COLORREF mouseLeave);
+
+	// Overrides
+		// ClassWizard generated virtual function overrides
+		//{{AFX_VIRTUAL(CDesignButton)
+		//}}AFX_VIRTUAL
+
+	// Implementation
+public:
+	virtual ~CDesignButton();
 	// Generated message map functions
 protected:
-	COLORREF m_MouseHover;
-	COLORREF m_MouseLeave;
+	DesignColors m_DesignColors;
 	BOOL m_enable;
-	//{{AFX_MSG(CDesignButtonAction)
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	//{{AFX_MSG(CDesignButton)
 	afx_msg LRESULT OnMouseLeave(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnMouseHover(WPARAM wparam, LPARAM lparam);
 	//}}AFX_MSG
@@ -45,11 +43,13 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnMove(int x, int y);
+	afx_msg void OnShowWindow(BOOL bShow, UINT status);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	virtual BOOL Create(LPCTSTR lpszCaption, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID);
+	void CheckControlStyle(const DWORD& dwStyle);
+	virtual BOOL CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, LPVOID lpParam = NULL);
+	void ShowLeaveButton();
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
+	virtual void PreSubclassWindow();
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-

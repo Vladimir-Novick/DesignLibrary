@@ -12,7 +12,6 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMouseAction
-IMPLEMENT_SERIAL(CDesignMouseAction,BASECLASS,1)
 CDesignMouseAction::CDesignMouseAction()
 {
 	m_bResizing = FALSE;
@@ -32,7 +31,7 @@ CDesignMouseAction::~CDesignMouseAction()
 	DeleteToolTip();
 }
 
-BEGIN_MESSAGE_MAP(CDesignMouseAction, BASECLASS)
+BEGIN_MESSAGE_MAP(CDesignMouseAction, CMFCButton)
 	//{{AFX_MSG_MAP(CMouseAction)
 	ON_WM_MOUSEMOVE()
 	ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
@@ -41,6 +40,10 @@ BEGIN_MESSAGE_MAP(CDesignMouseAction, BASECLASS)
 	ON_WM_MOVE()
 	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
+	ON_WM_CREATE()
+	ON_WM_SHOWWINDOW()
+	ON_WM_SIZE()
+	ON_WM_DRAWITEM()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -58,22 +61,18 @@ void CDesignMouseAction::OnMouseMove(UINT nFlags, CPoint point)
 		m_bTracking = _TrackMouseEvent(&tme); //Tell Windows that we want to process all mouse Hover and Leave Messages
 		m_point = point;
 	}
-	BASECLASS::OnMouseMove(nFlags,point);
+	CMFCButton::OnMouseMove(nFlags,point);
 }
 LRESULT CDesignMouseAction::OnMouseHover(WPARAM wparam, LPARAM lparam) 
 {
 	if (!m_bHover)
 	{
 		//ShowWindow(SW_HIDE);
-		BASECLASS::Invalidate();
+		CMFCButton::Invalidate();
 		//ShowWindow(SW_SHOW);
 	}
 	m_bHover=TRUE;
-	/* This line corrects a problem with the tooltips not displaying when 
-	the mouse passes over them, if the parent window has not been clicked yet.
-	Normally this isn't an issue, but when developing multi-windowed apps, this 
-	bug would appear. Setting the ActiveWindow to the parent is a solution to that.
-	*/
+
 	::SetActiveWindow(GetParent()->GetSafeHwnd());
 	DeleteToolTip();//Remove old tooltip
 	SetToolTipText(m_tooltext);// Create a new Tooltip with new Button Size and Location
@@ -128,7 +127,7 @@ void CDesignMouseAction::OnRButtonDown( UINT nFlags, CPoint point )
 		rect = NULL;
 		m_bResizing = FALSE;
 	}
-	BASECLASS::OnRButtonDown(nFlags,point);
+	CMFCButton::OnRButtonDown(nFlags,point);
 }
 
 BOOL CDesignMouseAction::PreTranslateMessage(MSG* pMsg) 
@@ -136,7 +135,7 @@ BOOL CDesignMouseAction::PreTranslateMessage(MSG* pMsg)
 	if (m_ToolTip != NULL)
 		if (::IsWindow(m_ToolTip->m_hWnd)) // Incase m_ToolTip isn't NULL, check to see if its a valid window
 			m_ToolTip->RelayEvent(pMsg);		
-	return BASECLASS::PreTranslateMessage(pMsg);
+	return CMFCButton::PreTranslateMessage(pMsg);
 }
 
 // Set the tooltip with a string resource
@@ -153,14 +152,12 @@ void CDesignMouseAction::SetToolTipText(UINT nId, BOOL bActivate)
 // Set the tooltip with a CString
 void CDesignMouseAction::SetToolTipText(CString spText, BOOL bActivate)
 {
-	// We cannot accept NULL pointer
+
 	if (spText.IsEmpty()) return;
 
-	// Initialize ToolTip
 	InitToolTip();
 	m_tooltext = spText;
 
-	// If there is no tooltip defined then add it
 	if (m_ToolTip->GetToolCount() == 0)
 	{
 		CRect rectBtn; 
@@ -168,7 +165,6 @@ void CDesignMouseAction::SetToolTipText(CString spText, BOOL bActivate)
 		m_ToolTip->AddTool(this, m_tooltext, rectBtn, 1);
 	}
 
-	// Set text for tooltip
 	m_ToolTip->UpdateTipText(m_tooltext, this, 1);
 	m_ToolTip->Activate(bActivate);
 }
@@ -178,26 +174,23 @@ void CDesignMouseAction::InitToolTip()
 	if (m_ToolTip == NULL)
 	{
 		m_ToolTip = new CToolTipCtrl;
-		// Create ToolTip control
+		
 		m_ToolTip->Create(this);
 		m_ToolTip->Activate(TRUE);
 	}
-} // End of InitToolTip
+} 
 
-// Activate the tooltip
 void CDesignMouseAction::ActivateTooltip(BOOL bActivate)
 {
-	// If there is no tooltip then do nothing
+
 	if (m_ToolTip->GetToolCount() == 0)
 		return;
 
-	// Activate tooltip
 	m_ToolTip->Activate(bActivate);
-} // End of EnableTooltip
+} 
 
 void CDesignMouseAction::DeleteToolTip()
 {
-	// Destroy Tooltip incase the size of the button has changed.
 	if (m_ToolTip != NULL)
 	{
 		delete m_ToolTip;
@@ -207,71 +200,16 @@ void CDesignMouseAction::DeleteToolTip()
 
 void CDesignMouseAction::OnMove(int x, int y) 
 {
-	BASECLASS::OnMove(x, y);
+	CMFCButton::OnMove(x, y);
 	
-	// This code is so that when a transparent control is moved
-	// and the dialog or app window behind the transparent control
-	// is showing a bitmap, this forces the parent to redraw
-	// before we redraw so that the bitmap is shown properly
-	// and also eliminates any window overlapping that may occur with
-	// using a Transparent Window on top of a Bitmap...
-	// If you are not using a transparent window, you shouldn't need this...
-	
-	ShowWindow(SW_HIDE);// Hide Window
+	ShowWindow(SW_HIDE);
 	CRect rect;
 	GetWindowRect(&rect);
 	GetParent()->ScreenToClient(&rect);
-	GetParent()->InvalidateRect(&rect);//Tell Parent to redraw the rect
-	ShowWindow(SW_SHOW);//Now redraw us so that Control displays correctly
+	GetParent()->InvalidateRect(&rect);
+	ShowWindow(SW_SHOW);
 }
 
-void CDesignMouseAction::Serialize(CArchive& ar) 
-{
-	if (ar.IsStoring())//Save Window Position in relation to parent
-	{	// storing code
-		CRect rect;
-		TCHAR ch[_MAX_PATH];
-		GetWindowRect(&rect);
-		GetParent()->ScreenToClient(&rect);
-		CString str = _T("");
-		if (!m_windowName.IsEmpty())
-		{
-			str = GetWindowName();
-			str += _T("=");
-		}
-		if (!rect.IsRectEmpty())
-		{
-			str += LongToStr(ch, _MAX_PATH,rect.left);
-			str += _T(",");
-			str += LongToStr(ch, _MAX_PATH,rect.top);
-			str += _T(",");
-			str += LongToStr(ch, _MAX_PATH,rect.right);
-			str += _T(",");
-			str += LongToStr(ch, _MAX_PATH,rect.bottom);
-			str += _T("\r\n");
-		}
-		ar.WriteString(str);
-	}
-	else//Load window position and move to proper place on parent
-	{	// loading code
-		CRect rect = NULL;
-		CString str = _T("");
-		ar.ReadString(str);
-		if (str.Find(_T("="),0) > 1)
-		{
-			SetWindowName(str.Left(str.Find(_T("="),0)));
-			str.Delete(0,str.Find(_T("="),0)+1);
-		}
-		rect.left = _wtol(str.Left(str.Find(_T(","),0)));
-		str.Delete(0,str.Find(_T(","),0)+1);
-		rect.top = _wtol(str.Left(str.Find(_T(","),0)));
-		str.Delete(0,str.Find(_T(","),0)+1);
-		rect.right = _wtol(str.Left(str.Find(_T(","),0)));
-		str.Delete(0,str.Find(_T(","),0)+1);
-		rect.bottom = _wtol(str);
-		BOOL b = ::MoveWindow(BASECLASS::m_hWnd,rect.left,rect.top,rect.Width(),rect.Height(),TRUE);
-	}
-}
 
 HBRUSH CDesignMouseAction::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
@@ -287,6 +225,57 @@ HBRUSH CDesignMouseAction::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		hbr = CreateBrushIndirect(&brush);//Use a transparent brush for painting
 	}
 	else
-		hbr = BASECLASS::OnCtlColor(pDC, pWnd, nCtlColor);//Else use default
+		hbr = CMFCButton::OnCtlColor(pDC, pWnd, nCtlColor);//Else use default
 	return hbr;
+}
+
+
+void CDesignMouseAction::PreSubclassWindow()
+{
+	// TODO: Add your specialized code here and/or call the base class
+
+	CMFCButton::PreSubclassWindow();
+}
+
+
+BOOL CDesignMouseAction::PreCreateWindow(CREATESTRUCT& cs)
+{
+	// TODO: Add your specialized code here and/or call the base class
+
+	return CMFCButton::PreCreateWindow(cs);
+}
+
+
+int CDesignMouseAction::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CMFCButton::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	// TODO:  Add your specialized creation code here
+
+	return 0;
+}
+
+
+void CDesignMouseAction::OnShowWindow(BOOL bShow, UINT nStatus)
+{
+	CMFCButton::OnShowWindow(bShow, nStatus);
+
+	// TODO: Add your message handler code here
+}
+
+
+void CDesignMouseAction::OnSize(UINT nType, int cx, int cy)
+{
+	CMFCButton::OnSize(nType, cx, cy);
+
+	// TODO: Add your message handler code here
+}
+
+
+void CDesignMouseAction::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CMFCButton::OnDrawItem(nIDCtl, lpDrawItemStruct);
 }

@@ -6,19 +6,16 @@
 // CDesignMouseAction.h : header file
 //
 
-#define BASECLASS CMFCButton
-
 /////////////////////////////////////////////////////////////////////////////
 // CMouseAction window
 
 #include <afxbutton.h>
 
-class CDesignMouseAction : public BASECLASS
+class CDesignMouseAction : public CMFCButton
 {
 // Construction
 public:
 	CDesignMouseAction();
-	DECLARE_SERIAL(CDesignMouseAction)
 // Attributes
 public:
 
@@ -30,7 +27,6 @@ public:
 	//{{AFX_VIRTUAL(CMouseAction)
 	public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	virtual void Serialize(CArchive& ar);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -76,6 +72,13 @@ protected:
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
+	virtual void PreSubclassWindow();
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+public:
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 };
 
 /////////////////////////////////////////////////////////////////////////////

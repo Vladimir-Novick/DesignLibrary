@@ -10,6 +10,14 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#if _MSC_VER >= 1927 
+//HACK VS 16.7 ATL header bug 
+#define __ATLIMAGE_H__ 
+namespace ATL { class CImage; }
+//#pragma warning( disable : 4150 4458 )   
+//#pragma comment(lib, "gdiplus.lib")
+#endif 
+
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
 #include <afxwin.h>         // MFC core and standard components
