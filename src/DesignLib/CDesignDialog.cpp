@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "CDefaultAppFont.h"
+#include "CDefaultAppFont.h" 
 #include "CDesignDialog.h"
 #include "DesignColors.h"
 
@@ -8,7 +8,45 @@
 using namespace std;
 
 
+#ifdef _DEBUG
+#undef DEBUG_NEW
+#define DEBUG_NEW new(__FILE__, __LINE__)
+#define _CRTDBG_MAP_ALLOC
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_DYNAMIC(CDesignDialog, CDialog)
+
+DesignColors::~DesignColors() {
+	delete m_brushBackground;
+}
+
+DesignColors::DesignColors() {
+
+
+	colorSchema = 0;
+	m_brushBackground = NULL;
+	m_dialog_BACKGROUND = ::GetSysColor(COLOR_3DFACE);
+	m_COLOR_HIGHLIGHT = ::GetSysColor(COLOR_HIGHLIGHT);
+	m_COLOR_HIGHLIGHTTEXT = ::GetSysColor(COLOR_HIGHLIGHTTEXT);
+}
+
 CDesignDialog::~CDesignDialog() {
+
+
+	for (auto it = buttons.begin(); it != buttons.end(); ++it) {
+		CDesignButton* control = it->second;
+		if (control != NULL) {
+			delete control;
+			buttons[it->first] = NULL;
+		}
+	}
+	buttons.clear();
+
+
+
 	if (pScaleFont != NULL) {
 		delete pScaleFont;
 		pScaleFont = NULL;
@@ -32,28 +70,44 @@ HBRUSH CDesignDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
 	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
-	if (m_DesignColors.colorSchema != 0) {
-		SetBackgroundColor(m_DesignColors, nCtlColor, hbr, pDC);
+	if (CDefaultAppFont::GetInstance()->GetColorSchema() != 0) {
+		m_DesignColors = CDefaultAppFont::GetInstance()->GetDesignColors();
+		CBrush *br = SetBackgroundColor(m_DesignColors, nCtlColor, hbr, pDC);
+		if (br != NULL) {
+			return *(br);
+		}
 	}
+
 
 
 	return hbr;
 }
 
-void CDesignDialog::SetBackgroundColor(DesignColors& designColors, const UINT& nCtlColor, HBRUSH& hbr, CDC* pDC)
+CBrush* CDesignDialog::SetBackgroundColor(DesignColors& designColors, const UINT& nCtlColor, HBRUSH& hbr, CDC* pDC)
 {
-	if (designColors.colorSchema != 0) {
-		if (nCtlColor == CTLCOLOR_STATIC || nCtlColor == CTLCOLOR_DLG)
-		{
-			pDC->SetBkColor(designColors.background);
 
-		}
+	if (designColors.colorSchema != 0) {
 
 		if (nCtlColor == CTLCOLOR_STATIC)
 		{
 			pDC->SetTextColor(designColors.captionTextColor);
 		}
+
+
+
+		if (nCtlColor == CTLCOLOR_STATIC || nCtlColor == CTLCOLOR_DLG)
+		{
+			pDC->SetBkColor(designColors.m_dialog_BACKGROUND);
+            return NULL;
+
+		}
+
+
+
+		
 	}
+
+	return NULL;
 
 }
 
@@ -74,7 +128,7 @@ BOOL CDesignDialog::OnInitDialog()
 	BOOL ret = CDialog::OnInitDialog();
 	auto correctWindow = CorrectDialogFonts(m_hWnd);
 	this->isMoveToCenter = correctWindow.isMoveToCenter;
-
+	m_DesignFont = correctWindow;
 	return ret;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -92,8 +146,8 @@ SDesignFont CDesignDialog::CorrectDialogFonts(HWND m_hWnd)
 	int max_height = 0;
 	int max_width = 0;
 	double multiplier_width = 0;
-	TCHAR controlClassName[128];
-	CFont* oldFont;
+//	TCHAR controlClassName[128];
+//	CFont* oldFont;
 
 	RECT rectWorkArea;
 	BOOL fResult = SystemParametersInfo(SPI_GETWORKAREA, 0, &rectWorkArea, 0);
@@ -115,7 +169,8 @@ SDesignFont CDesignDialog::CorrectDialogFonts(HWND m_hWnd)
 	}
 	else {
 		lf.lfHeight = -11;
-		strcpy_s((char*)lf.lfFaceName,14, "MS Sans Serif");
+		const char *fontName = "MS Sans Serif";
+		strcpy_s((CHAR *)(lf.lfFaceName), 32, fontName);
 	}
 	pDefaultFont = CDefaultAppFont::GetInstance()->GetScaleFont(lf);
 
@@ -179,7 +234,7 @@ SDesignFont CDesignDialog::CorrectDialogFonts(HWND m_hWnd)
 				LOGFONT logfont = {};
 				pFont->GetLogFont(&logfont);
 				float f = (float)logfont.lfHeight * font_multiplier;
-				logfont.lfHeight = f;
+				logfont.lfHeight = static_cast<long>(f);
 				multiplier_height = multiplier_height * font_multiplier;
 				pFont = CDefaultAppFont::GetInstance()->GetScaleFont(logfont);
 			}
@@ -261,28 +316,24 @@ SDesignSize CDesignDialog::ResizeWindow(const HWND& source_hWnd, float multiplie
 	RECT rect = {};
 	wnd->GetWindowRect(&rect);
 
-	float cx = (float)(rect.right - rect.left) * multiplier;
+	int cx = static_cast<int>((float)(rect.right - rect.left) * multiplier);
 
-	float cy = (float)(rect.bottom - rect.top) * multiplier;
+	int cy = static_cast<int>((float)(rect.bottom - rect.top) * multiplier);
 
 	SDesignSize ret;
 	ret.width = cx;
 	ret.height = cy;
 
-	wnd->SetWindowPos(NULL, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+	wnd->SetWindowPos(NULL, 0, 0, ret.width, ret.height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 	return ret;
 }
 
 void CDesignDialog::ResizeChildWindow(const HWND& mainhWnd, const HWND& source_hWnd, float multiplier_x)
 {
-	auto designColors = CDefaultAppFont::GetInstance()->GetDesignColors();
-	TCHAR  clsName_v[256];
+	DesignColors  designColors = CDefaultAppFont::GetInstance()->GetDesignColors();
+	CHAR clsName_v[256];
 	::GetClassName(source_hWnd, clsName_v, 256);
 	HWND child = source_hWnd;
-
-
-
-	int dropW;
 
 
 	RECT rect = {};
@@ -290,23 +341,23 @@ void CDesignDialog::ResizeChildWindow(const HWND& mainhWnd, const HWND& source_h
 	wnd->GetWindowRect(&rect);
 	wnd->GetParent()->ScreenToClient(&rect);
 
-	float cx = (float)(rect.right - rect.left) * multiplier_x;
+	int cx = static_cast<int>((float)(rect.right - rect.left) * multiplier_x);
 
-	float cy = (float)(rect.bottom - rect.top) * multiplier_x;
+	int cy = static_cast<int>((float)(rect.bottom - rect.top) * multiplier_x);
 
-	if (_tcscmp(clsName_v, _T("ComboBox")) == 0) {
+	if (strcmp(clsName_v, "ComboBox") == 0) {
 		cy *= 10;
 	}
 
-	if (_tcscmp(clsName_v, _T("Static")) == 0) {
+	if (strcmp(clsName_v, "Static") == 0) {
 		if (designColors.colorSchema != 0) {
 			CDC* cdc = wnd->GetDC();
 			cdc->SetTextColor(designColors.captionTextColor);
 		}
 	}
 
-	float x = (float)(rect.left) * multiplier_x;
-	float y = (float)(rect.top) * multiplier_x;
+	int x = (int)((float)(rect.left) * multiplier_x);
+	int y = (int) ((float)(rect.top) * multiplier_x);
 
 	::SetWindowPos(child, NULL, x, y, cx, cy, SWP_NOZORDER);
 }
@@ -419,15 +470,6 @@ LRESULT CDesignDialog::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 BOOL CDesignDialog::DestroyWindow()
 {
-	for (auto it = buttons.begin(); it != buttons.end(); ++it) {
-		CDesignButton* control = it->second;
-		if (control != NULL) {
-			delete control;
-			buttons[it->first] = NULL;
-		}
-	}
-	buttons.clear();
-
 	return CDialog::DestroyWindow();
 }
 
@@ -440,51 +482,48 @@ void CDesignDialog::DoDataExchange(CDataExchange* pDX)
 
 }
 
-void CDesignDialog::DDX_AllControls(CDataExchange* pDX)
+
+
+void CDesignDialog::DDX_DesignControls(CDataExchange* pDX, HWND& m_hWnd,
+	map<int, CDesignButton*>& buttons,
+	map<int, int>& staticControls)
 {
-	m_DesignColors = CDefaultAppFont::GetInstance()->GetDesignColors();
-	if (CDefaultAppFont::GetInstance()->m_ColorShema != 0) {
+	if (CDefaultAppFont::GetInstance()->GetColorSchema() != 0) {
 		CWnd* cWnd = CWnd::FromHandle(m_hWnd);
 		auto pChild = cWnd->GetWindow(GW_CHILD);
 		while (pChild) {
 			TCHAR clsName_v[256];
 			::GetClassName(pChild->m_hWnd, clsName_v, 256);
 
-			if (_tcscmp(clsName_v, _T("Button")) == 0) {
+			if (_tcscmp(clsName_v, _T("Button")) == 0)
+			{
 				int controlID = pChild->GetDlgCtrlID();
-				if (controlID != -1) {
+				int result = GetWindowLong(pChild->m_hWnd, GWL_STYLE);
+				bool isVisible = ((result & WS_VISIBLE) != 0);
+				if (controlID != -1 && isVisible) {
 					CString strCaption;
 					WINDOWINFO pwi;
 					pChild->GetWindowInfo(&pwi);
-					auto types = pwi.dwStyle & BS_TYPEMASK;
-					if ((types != BS_GROUPBOX)
-						&& (types != BS_CHECKBOX)
-						&& (types != BS_AUTOCHECKBOX)
-						&& (types != BS_RADIOBUTTON)
-						&& (types != BS_AUTORADIOBUTTON)
-						&& (types != BS_OWNERDRAW)
-						)
+					if (CDesignDialog::CheckButtonControlStyle(pwi.dwStyle))
 					{
 						CDesignButton* control;
 						auto it = buttons.find(controlID);
 						if (it != buttons.end()) {
 							control = buttons[controlID];
-							::DDX_Control(pDX, controlID, *control);
+						//	::DDX_Control(pDX, controlID, *control);
 						}
 						else {
 							auto itF = staticControls.find(controlID);
 							if (itF == staticControls.end()) {
 								control = new CDesignButton();
+
 								buttons[controlID] = control;
 								::DDX_Control(pDX, controlID, *control);
+
 							}
 
 						}
-
-
-
 					}
-
 				}
 			}
 			pChild = pChild->GetNextWindow();
@@ -499,7 +538,15 @@ void CDesignDialog::DDX_Control(CDataExchange* pDX, int nIDC, CWnd& rControl) {
 	::DDX_Control(pDX, nIDC, rControl);
 }
 
-
+void CDesignDialog::DDX_AllControls(CDataExchange* pDX)
+{
+	if (m_DesignColors.colorSchema != 0) {
+		CDesignDialog::DDX_DesignControls(pDX,
+			m_hWnd,
+			buttons,
+			staticControls);
+	}
+}
 //--------------}
 
 
@@ -821,3 +868,24 @@ BEGIN_MESSAGE_MAP(CDesignDialog, CDialog)
 END_MESSAGE_MAP()
 
 
+
+
+int CDesignDialog::CheckButtonControlStyle(DWORD dwStyle)
+{
+	int m_enable = FALSE;
+
+	auto types = dwStyle & BS_TYPEMASK;
+	if ((types != BS_GROUPBOX)
+		&& (types != BS_CHECKBOX)
+		&& (types != BS_AUTOCHECKBOX)
+		&& (types != BS_RADIOBUTTON)
+		&& (types != BS_AUTORADIOBUTTON)
+		&& (types != BS_OWNERDRAW)
+		)
+	{
+		m_enable = TRUE;
+	}
+
+
+	return m_enable;
+}

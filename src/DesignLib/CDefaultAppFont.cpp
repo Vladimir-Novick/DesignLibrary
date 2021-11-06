@@ -1,9 +1,20 @@
 #include "StdAfx.h"
 #include "CDefaultAppFont.h"
+#include "AppConfigMngr.h"
 
 #include <map>
 #include <string>
-#include <sstream>    
+#include <sstream>   
+
+
+#ifdef _DEBUG
+#undef DEBUG_NEW
+#define DEBUG_NEW new(__FILE__, __LINE__)
+#define _CRTDBG_MAP_ALLOC
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char BASED_CODE THIS_FILE[] = __FILE__;
+#endif
 
 
 CDefaultAppFont CDefaultAppFont::instance;
@@ -11,12 +22,19 @@ CDefaultAppFont CDefaultAppFont::instance;
 
 
 CDefaultAppFont::~CDefaultAppFont() {
+
+
 	DestroyObjects();
+
 }
 
 CDefaultAppFont* CDefaultAppFont::GetInstance() {
 
 	return &instance;
+}
+
+UINT CDefaultAppFont::GBL_GetItemHeight(string fontName) {
+	return instance.heights[fontName];
 }
 
 UINT CDefaultAppFont::GetItemHeight(string fontName) {
@@ -37,7 +55,21 @@ void CDefaultAppFont::SetFont(string fontName, LOGFONT& lf) {
 	SetFont(fontName, font);
 }
 
+COLORREF CDefaultAppFont::colorConverter(int hexValue) {
+	
+	int r = (int)(((hexValue >> 16) & 0xFF) / 255.0);  // Extract the RR BYTE
+	int g = (int)(((hexValue >> 8) & 0xFF) / 255.0);   // Extract the GG BYTE
+	int b = (int)(((hexValue) & 0xFF) / 255.0);        // Extract the BB BYTE
 
+	return RGB(r,g,b);
+}
+
+COLORREF CDefaultAppFont::colorConverter(const char *value) {
+
+	int r, g, b;
+	sscanf_s(value, "#%02x%02x%02x", &r, &g, &b);
+	return RGB(r, g, b);
+}
 
 void CDefaultAppFont::SetFont(string fontName, CFont* pFont) {
 	CFont* oldFont = fonts[fontName];
@@ -58,18 +90,31 @@ void CDefaultAppFont::SetFont(string fontName, CFont* pFont, COLORREF color) {
 
 
 void CDefaultAppFont::DestroyObjects() {
-	for (auto it = fonts.begin(); it != fonts.end(); ++it) {
-		delete  it->second;
-	}
-	fonts.clear();
-	for (auto it = colors.begin(); it != colors.end(); ++it) {
-		DeleteObject(it->second);
-	}
+	m_CriticalSection.Lock();
 
-	
-	ClearScaleFonts();
-	colors.clear();
-	heights.clear();
+		for (auto it = fonts.begin(); it != fonts.end(); ++it) {
+			delete  it->second;
+		}
+		fonts.clear();
+		for (auto it = colors.begin(); it != colors.end(); ++it) {
+			DeleteObject(it->second);
+		}
+
+
+		ClearScaleFonts();
+		colors.clear();
+		heights.clear();
+
+		SetColorSchema(0);
+
+
+		if (m_DesignColors.m_brushBackground != NULL) {
+			delete m_DesignColors.m_brushBackground;
+			m_DesignColors.m_brushBackground = NULL;
+		}
+
+	m_CriticalSection.Unlock();
+
 }
 
 void CDefaultAppFont::ClearScaleFonts()
@@ -83,31 +128,134 @@ void CDefaultAppFont::ClearScaleFonts()
 
 UINT CDefaultAppFont::MakeItemHeight(CFont* pFont)
 {
-	
-	return GetFontSize(pFont).y * 1.4;
+
+	return (UINT)(GetFontSize(pFont).y * 1.4);
+}
+
+void CDefaultAppFont::SetColorSchema(int schema) {
+	m_nColorSchema = schema;
+
+	m_DesignColors.colorSchema = m_nColorSchema;
+
+	if (m_DesignColors.m_brushBackground == NULL) {
+		delete m_DesignColors.m_brushBackground;
+		m_DesignColors.m_brushBackground = NULL;
+	}
+
+
+	if (m_nColorSchema == 0) {
+
+		m_DesignColors.m_COLOR_HIGHLIGHT = RGB(62,121,218);
+		m_DesignColors.m_COLOR_HIGHLIGHTTEXT = RGB(249,250,250);
+
+		SetSystemColors();
+	}
+
+	if (m_nColorSchema == 1) {
+
+		m_DesignColors.mouseLeave = RGB(238, 241, 247);
+		m_DesignColors.mouseHover = RGB(218, 223, 234);
+
+		m_DesignColors.textLeave = RGB(79, 89, 103);
+		m_DesignColors.textHover = RGB(113, 18, 23);
+
+
+
+		m_DesignColors.m_dialog_BACKGROUND = RGB(238, 241, 247);
+		m_DesignColors.captionTextColor = RGB(82, 83, 89);
+
+		m_DesignColors.m_COLOR_HIGHLIGHT = RGB(168, 190, 209);
+		m_DesignColors.m_COLOR_HIGHLIGHTTEXT = RGB(255, 255, 255);
+
+
+
+		SetSystemColors();
+
+	}
+
+
+	if (m_nColorSchema == 2) {
+
+		m_DesignColors.mouseLeave = RGB(230, 233, 235);
+		m_DesignColors.mouseHover = RGB(216, 218, 224);
+
+		m_DesignColors.textLeave = RGB(78, 85, 108);
+		m_DesignColors.textHover = RGB(43, 49, 69);
+
+		m_DesignColors.m_dialog_BACKGROUND = RGB(239, 242, 247);
+		m_DesignColors.captionTextColor = RGB(89, 93, 108);
+
+		m_DesignColors.m_COLOR_HIGHLIGHT = RGB(94, 120, 132);
+		m_DesignColors.m_COLOR_HIGHLIGHTTEXT = RGB(255, 255, 255);
+
+
+
+		SetSystemColors();
+
+	}
+
+
 }
 
 
-DesignColors CDefaultAppFont::GetDesignColors() {
-	DesignColors colors;
-	colors.colorSchema = m_ColorShema;
-	switch (m_ColorShema)
-	{
-	case 1:
-		colors.mouseLeave = RGB(231, 232, 234);
-		colors.mouseHover = RGB(218, 223, 234);
+CCriticalSection CDefaultAppFont::m_CriticalSection;
 
-		colors.textLeave = RGB(79, 89, 103);
-		colors.textHover = RGB(113, 18, 23);
+void CDefaultAppFont::SetSystemColors()
+{
+	DWORD aNewColors[2];
+	aNewColors[0] = m_DesignColors.m_COLOR_HIGHLIGHT;
+	aNewColors[1] = m_DesignColors.m_COLOR_HIGHLIGHTTEXT;
 
-		colors.background = RGB(238, 241, 247);
-		colors.captionTextColor = RGB(54, 80, 112);
 
-	break;
-	default:
-		break;
+	int aElements[2] = { COLOR_HIGHLIGHT,
+		                 COLOR_HIGHLIGHTTEXT
+
+	};
+//	SetSysColors(2, aElements, aNewColors);
+}
+int CDefaultAppFont::GetColorSchema() {
+	return m_nColorSchema;
+}
+
+COLORREF CDefaultAppFont::GetSysColor(int ColorID) {
+	if (instance.m_nColorSchema > 0) {
+		COLORREF ret;
+		switch (ColorID)
+		{
+		case COLOR_HIGHLIGHT :
+			ret = instance.m_DesignColors.m_COLOR_HIGHLIGHT;
+			break;
+		case COLOR_HIGHLIGHTTEXT:
+			ret = instance.m_DesignColors.m_COLOR_HIGHLIGHTTEXT;
+			break;
+		default:
+			ret = ::GetSysColor(ColorID);
+			break;
+		}
+		return ret;
 	}
-	return colors;
+	return ::GetSysColor(ColorID);
+}
+
+
+DesignColors& CDefaultAppFont::GetDesignColors() {
+
+	m_CriticalSection.Lock();
+	try
+	{
+		if (m_DesignColors.m_brushBackground == NULL) {
+			m_DesignColors.m_brushBackground = new CBrush();
+			m_DesignColors.m_brushBackground->CreateSolidBrush(m_DesignColors.m_dialog_BACKGROUND); // color white brush 
+		}
+	}
+	catch (const std::exception&)
+	{
+
+	}
+	m_CriticalSection.Unlock();
+
+	return m_DesignColors;
+
 }
 
 string  CDefaultAppFont::LogFontToString(LOGFONT& font) {
@@ -125,7 +273,7 @@ string  CDefaultAppFont::LogFontToString(LOGFONT& font) {
 	stringBuilder << " " << (int)font.lfClipPrecision;
 	stringBuilder << " " << (int)font.lfQuality;
 	stringBuilder << " " << (int)font.lfPitchAndFamily;
-	stringBuilder << " " << CString(font.lfFaceName);
+	stringBuilder << " " << string(font.lfFaceName);
 	return stringBuilder.str();
 }
 
@@ -142,7 +290,9 @@ CFont* CDefaultAppFont::GetScaleFont(LOGFONT& font) {
 
 POINT CDefaultAppFont::GetFontSize(CFont* pFont)
 {
-	POINT p;
+	POINT p  ;
+	p.x = 0;
+	p.y = 0;
 	auto mainWindow = AfxGetApp()->GetMainWnd();
 	UINT newHeight = 0;
 	if (mainWindow != NULL) {
@@ -161,9 +311,9 @@ POINT CDefaultAppFont::GetFontSize(CFont* pFont)
 
 
 CDefaultAppFont::CDefaultAppFont() {
-	m_ColorShema = 1;
+	m_nColorSchema = 0;
+	SetColorSchema(0);
 }
-
 
 
 void CDefaultAppFont::RedrawAllWindow()
@@ -199,8 +349,6 @@ void CDefaultAppFont::RedrawAllWindow()
 						RECT rect;
 
 						::GetWindowRect(hWnd, &rect);
-
-						bool retflag;
 
 						int width;
 						int height;

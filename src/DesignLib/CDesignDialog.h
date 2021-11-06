@@ -20,6 +20,9 @@ struct SDesignSize {
 
 class  CDesignDialog : public CDialog
 {
+
+	DECLARE_DYNAMIC(CDesignDialog)
+
 private:
 	CFont* pDefaultFont;
 	CFont* pScaleFont;
@@ -36,18 +39,17 @@ public:
 		return CDialog::UpdateData(ok);
 	}
 
-	// for getting access to the actual controls
-	void DDX_Control(CDataExchange* pDX, int nIDC, CWnd& rControl);
+
 
 	BOOL EnableToolTips(BOOL ok) {
 		return CDialog::EnableToolTips(ok);
 	}
 
-	CDesignDialog(LPCTSTR lpszTemplateName, CWnd* pParentWnd = NULL)
+	CDesignDialog(LPCTSTR lpszTemplateName, CWnd* pParentWnd = NULL) 
 		:CDialog(lpszTemplateName, pParentWnd) {
 		Init();
 	};
-	CDesignDialog(UINT nIDTemplate, CWnd* pParentWnd = NULL)
+	CDesignDialog(UINT nIDTemplate, CWnd* pParentWnd = NULL) 
 		: CDialog(nIDTemplate, pParentWnd) {
 		Init();
 	};
@@ -58,13 +60,14 @@ public:
 	};
 
 	virtual ~CDesignDialog();
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CDesignDialog)
 
+
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	static void SetBackgroundColor(DesignColors& designColors, const UINT& nCtlColor, HBRUSH& hbr, CDC* pDC);
+	static CBrush * SetBackgroundColor(DesignColors& designColors, const UINT& nCtlColor, HBRUSH& hbr, CDC* pDC);
 	//}}AFX_VIRTUAL
 
 public:
@@ -78,7 +81,7 @@ public:
 	virtual BOOL Create(LPCTSTR lpszTemplateName, CWnd* pParentWnd = NULL);
 	virtual BOOL Create(UINT nIDTemplate, CWnd* pParentWnd = NULL) {
 		Init();
-		return CDialog::Create(nIDTemplate, pParentWnd = NULL);
+		return CDialog::Create(nIDTemplate,  pParentWnd = NULL);
 	}
 
 	virtual BOOL CreateIndirect(HGLOBAL hDialogTemplate, CWnd* pParentWnd = NULL) {
@@ -146,13 +149,21 @@ public:
 	DECLARE_MESSAGE_MAP()
 
 public:
-
+	SDesignFont m_DesignFont;
 	virtual void DoDataExchange(CDataExchange* pDX);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
-protected:
+    static void DDX_DesignControls(CDataExchange* pDX, HWND &m_hWnd, 
+		map<int, CDesignButton*> &buttons,
+		map<int, int> &staticControls
+	);
+    static int CheckButtonControlStyle(DWORD dwStyle);
 	DesignColors m_DesignColors;
-	void DDX_AllControls(CDataExchange* pDX);
-	map<int, CDesignButton*> buttons;
-	map<int, int> staticControls;
-};
 
+protected:
+	void DDX_AllControls(CDataExchange* pDX);
+	// for getting access to the actual controls
+	void DDX_Control(CDataExchange* pDX, int nIDC, CWnd& rControl);
+public:
+	map<int, CDesignButton*> buttons;
+	map<int, int> staticControls;	
+};

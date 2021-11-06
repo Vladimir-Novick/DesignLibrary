@@ -1,11 +1,15 @@
-// CDesignButtonAction.cpp : implementation file
+// CDesignButton.cpp : implementation file
 //
 #include "StdAfx.h"
 
 #include "CDesignButtonAction.h"
+#include "DesignColors.h"
 #include "CDefaultAppFont.h"
 
 #ifdef _DEBUG
+#undef DEBUG_NEW
+#define DEBUG_NEW new(__FILE__, __LINE__)
+#define _CRTDBG_MAP_ALLOC
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -33,14 +37,14 @@ CDesignButton::~CDesignButton()
 BEGIN_MESSAGE_MAP(CDesignButton, CDesignMouseAction)
 	//{{AFX_MSG_MAP(CDesignButton)
 //	ON_WM_MOUSEMOVE()
-ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
-ON_MESSAGE(WM_MOUSEHOVER, OnMouseHover)
-//}}AFX_MSG_MAP
-ON_WM_SIZE()
-ON_WM_MOVE()
-ON_WM_SHOWWINDOW()
-ON_WM_CREATE()
-ON_WM_DRAWITEM()
+	ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
+	ON_MESSAGE(WM_MOUSEHOVER, OnMouseHover)
+	//}}AFX_MSG_MAP
+	ON_WM_SIZE()
+	ON_WM_MOVE()
+	ON_WM_SHOWWINDOW()
+	ON_WM_CREATE()
+	ON_WM_DRAWITEM()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,7 +112,7 @@ int CDesignButton::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL CDesignButton::Create(LPCTSTR lpszCaption, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
 {
-	auto ret = CDesignMouseAction::Create(lpszCaption, dwStyle, rect, pParentWnd, nID);
+	auto ret =  CDesignMouseAction::Create(lpszCaption, dwStyle, rect, pParentWnd, nID);
 	CheckControlStyle(dwStyle);
 	ShowLeaveButton();
 	return ret;
@@ -138,11 +142,10 @@ BOOL CDesignButton::CreateEx(DWORD dwExStyle, LPCTSTR lpszClassName, LPCTSTR lps
 void CDesignButton::ShowLeaveButton()
 {
 	if (m_enable) {
-
 		CDesignMouseAction::SetTextColor(m_DesignColors.textLeave);
 		CDesignMouseAction::SetFaceColor(m_DesignColors.mouseLeave);
-		CDesignMouseAction::m_nFlatStyle = CMFCButton::BUTTONSTYLE_SEMIFLAT;
-
+	    CDesignMouseAction::m_nFlatStyle = CMFCButton::BUTTONSTYLE_SEMIFLAT;
+		
 	}
 }
 
@@ -166,6 +169,11 @@ void CDesignButton::PreSubclassWindow()
 	WINDOWINFO pwi;
 	::GetWindowInfo(m_hWnd, &pwi);
 	CheckControlStyle(pwi.dwStyle);
+
+	if (m_enable) {
+		auto font = GetParent()->GetFont();
+		this->SetFont(font);
+	}
 
 	ShowLeaveButton();
 

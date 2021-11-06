@@ -1,37 +1,37 @@
 
 #pragma once
 
-// CDesignButtonAction.h : header file
+// CDesignButton.h : header file
 //
 #include "StdAfx.h"
-#include "afxbutton.h"
-#include "DesignColors.h"
-#include "CDesignMouseAction.h"
 
+#include "CDesignMouseAction.h"
+#include "DesignColors.h"
+#include "afxbutton.h"
 /////////////////////////////////////////////////////////////////////////////
-// CDesignButtonAction window
+// CDesignButton window
 
 class CDesignButton : public CDesignMouseAction
 {
-	// Construction
+// Construction
 public:
 	CDesignButton();
 
-	// Attributes
+// Attributes
 public:
 
-	// Operations
+// Operations
 public:
 
-	// Overrides
-		// ClassWizard generated virtual function overrides
-		//{{AFX_VIRTUAL(CDesignButton)
-		//}}AFX_VIRTUAL
+// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CDesignButton)
+	//}}AFX_VIRTUAL
 
-	// Implementation
+// Implementation
 public:
 	virtual ~CDesignButton();
-	// Generated message map functions
+		// Generated message map functions
 protected:
 	DesignColors m_DesignColors;
 	BOOL m_enable;
@@ -53,3 +53,10 @@ public:
 	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	virtual void PreSubclassWindow();
 };
+
+/////////////////////////////////////////////////////////////////////////////
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+
+

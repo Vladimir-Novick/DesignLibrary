@@ -1,7 +1,14 @@
 #pragma once
 
-#define WINVER			0x0501
-#define _WIN32_WINNT	0x0501 
+#ifndef WINVER
+   #define WINVER			0x0501
+#endif // !WINVER
+
+#ifndef _WIN32_WINNT
+    #define _WIN32_WINNT	0x0501 
+#endif
+
+
 
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
@@ -29,7 +36,7 @@
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 
-
+#include <afxmt.h>
 #include <string>
 #include <map>
 #include "DesignColors.h"
@@ -66,6 +73,14 @@
 using namespace std;
 
 class DllExport  CDefaultAppFont {
+
+public:
+	COLORREF sys_COLOR_HIGHLIGHT ;
+	COLORREF sys_COLOR_HIGHLIGHTTEXT ;
+	COLORREF sys_COLOR_BACKGROUND;
+	COLORREF sys_COLOR_BTNFACE;
+	COLORREF sys_COLOR_BTNTEXT;
+
 private:
 	static CDefaultAppFont instance;
 	map<string, CFont*> fonts;
@@ -76,16 +91,22 @@ private:
 	CDefaultAppFont();
 
 	void SetItemHeight(string fontName, UINT height);
-
+	int m_nColorSchema;
+	DesignColors m_DesignColors;
 	string LogFontToString(LOGFONT& font);
+	static CCriticalSection m_CriticalSection;
 public:
 
-	int m_ColorShema;
+	void SetColorSchema(int schema);
+	void SetSystemColors();
+	int GetColorSchema();
 	UINT MakeItemHeight(CFont* pFont);
 	~CDefaultAppFont();
 	static CDefaultAppFont* GetInstance();
+	static UINT GBL_GetItemHeight(string fontName);
 
-	DesignColors GetDesignColors();
+	DesignColors &GetDesignColors();
+	static COLORREF GetSysColor(int ColorID);
 
 	CFont* GetFont(string fontName);
 	CFont* GetScaleFont(LOGFONT& font);
@@ -106,6 +127,9 @@ public:
 	void DestroyObjects();
 	void ClearScaleFonts();
 	void RedrawAllWindow();
+
+	COLORREF colorConverter(int hexValue);
+	COLORREF colorConverter(const char * value);
 
 	POINT GetFontSize(CFont* font);
 };

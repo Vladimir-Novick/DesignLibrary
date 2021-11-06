@@ -2,11 +2,11 @@
 
 #include "StdAfx.h"
 
-struct  DesignColors
+class  DesignColors
 {
 public:
 	UINT colorSchema;
-	COLORREF background;
+	COLORREF m_dialog_BACKGROUND;
 	COLORREF captionTextColor;
 	COLORREF mouseLeave;
 	COLORREF mouseHover;
@@ -14,5 +14,13 @@ public:
 	COLORREF textHover;
 	COLORREF borderLeave;
 	COLORREF borderHover;
+	CBrush* m_brushBackground;
+	COLORREF m_COLOR_HIGHLIGHT;
+	COLORREF m_COLOR_HIGHLIGHTTEXT;
+
+	DesignColors();
+	~DesignColors();
+
 };
+
 

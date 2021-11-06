@@ -5,6 +5,9 @@
 #include "CDesignMouseAction.h"
 
 #ifdef _DEBUG
+#undef DEBUG_NEW
+#define DEBUG_NEW new(__FILE__, __LINE__)
+#define _CRTDBG_MAP_ALLOC
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -12,6 +15,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMouseAction
+
 CDesignMouseAction::CDesignMouseAction()
 {
 	m_bResizing = FALSE;
@@ -65,21 +69,23 @@ void CDesignMouseAction::OnMouseMove(UINT nFlags, CPoint point)
 }
 LRESULT CDesignMouseAction::OnMouseHover(WPARAM wparam, LPARAM lparam) 
 {
-	if (!m_bHover)
-	{
-		//ShowWindow(SW_HIDE);
-		CMFCButton::Invalidate();
-		//ShowWindow(SW_SHOW);
-	}
-	m_bHover=TRUE;
+	if (this->IsWindowVisible()) {
+		if (!m_bHover)
+		{
+			//ShowWindow(SW_HIDE);
+			CMFCButton::Invalidate();
+			//ShowWindow(SW_SHOW);
+		}
+		m_bHover = TRUE;
 
-	::SetActiveWindow(GetParent()->GetSafeHwnd());
-	DeleteToolTip();//Remove old tooltip
-	SetToolTipText(m_tooltext);// Create a new Tooltip with new Button Size and Location
-	if (m_ToolTip != NULL)
-		if (::IsWindow(m_ToolTip->m_hWnd))
-			//Display ToolTip
-			m_ToolTip->Update();
+		::SetActiveWindow(GetParent()->GetSafeHwnd());
+		DeleteToolTip();//Remove old tooltip
+		SetToolTipText(m_tooltext);// Create a new Tooltip with new Button Size and Location
+		if (m_ToolTip != NULL)
+			if (::IsWindow(m_ToolTip->m_hWnd))
+				//Display ToolTip
+				m_ToolTip->Update();
+	}
 	return 0;
 }
 
@@ -87,7 +93,9 @@ LRESULT CDesignMouseAction::OnMouseLeave(WPARAM wparam, LPARAM lparam)
 {
 	m_bTracking = FALSE;
 	m_bHover=FALSE;
-	RedrawWindow();
+	if (this->IsWindowVisible()) {
+		RedrawWindow();
+	}
 	return 0;
 }
 
@@ -209,7 +217,6 @@ void CDesignMouseAction::OnMove(int x, int y)
 	GetParent()->InvalidateRect(&rect);
 	ShowWindow(SW_SHOW);
 }
-
 
 HBRUSH CDesignMouseAction::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
